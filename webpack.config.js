@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+const path = require('path');
 
 const devCerts = require("office-addin-dev-certs");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
@@ -22,6 +23,8 @@ module.exports = async (env, options) => {
       commands: "./src/commands/commands.js",
     },
     output: {
+      filename: "[name].js",
+      path: path.resolve(__dirname, "dist"),
       clean: true,
     },
     resolve: {
