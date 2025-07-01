@@ -47,7 +47,7 @@ async function processDictaAPI(text, wordContext) {
     statusDiv.innerHTML = '<div class="loading">שלב 1: מחפש התאמות בטקסט...</div>';
     
     // קריאה ראשונה - חיפוש התאמות
-    const firstResponse = await fetch('https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim', {
+    const firstResponse = await fetch('https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,9 +73,9 @@ async function processDictaAPI(text, wordContext) {
     }
     
     statusDiv.innerHTML = '<div class="loading">שלב 2: מעבד את התוצאות...</div>';
-    
+    const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
     // קריאה שנייה - קבלת הציטוטים המעוצבים
-    const secondResponse = await fetch('https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=22&smax=10000', {
+    const secondResponse = await fetch('https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=22&smax=10000', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
