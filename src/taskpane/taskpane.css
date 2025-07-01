@@ -1,0 +1,72 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    direction: rtl;
+}
+
+.container {
+    max-width: 100%;
+}
+
+button {
+    background-color: #0078d4;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 10px 0;
+    cursor: pointer;
+    border-radius: 4px;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #106ebe;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.status {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.loading {
+    background-color: #d1ecf1;
+    color: #0c5460;
+}
+
+.results {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.citation-item {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.citation-item:hover {
+    background-color: #f8f9fa;
+}
+
+.citation-item:last-child {
+    border-bottom: none;
+}
