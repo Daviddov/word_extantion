@@ -38,17 +38,17 @@ async function extractAndProcessWithAPI() {
     button.disabled = false;
   }
 }
-let proxy = 'https://cors-anywhere.herokuapp.com/';
-proxy = '';
+let proxy = 'https://dictaproxy-production.up.railway.app/';
+
 // עיבוד עם API של דיקטה
 async function processDictaAPI(text, wordContext) {
   const statusDiv = document.getElementById('status');
   
   try {
     statusDiv.innerHTML = '<div class="loading">שלב 1: מחפש התאמות בטקסט...</div>';
-    
+    let url = 'https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim';
     // קריאה ראשונה - חיפוש התאמות
-    const firstResponse = await fetch(proxy + 'https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim', {
+    const firstResponse = await fetch(proxy + 'markpsukim', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -74,9 +74,9 @@ async function processDictaAPI(text, wordContext) {
     }
     
     statusDiv.innerHTML = '<div class="loading">שלב 2: מעבד את התוצאות...</div>';
-    const PROXY_URL = 'https://cors-anywhere.herokuapp.com/';
+    url = 'https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api';
     // קריאה שנייה - קבלת הציטוטים המעוצבים
-    const secondResponse = await fetch(proxy + 'https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=22&smax=10000', {
+    const secondResponse = await fetch(proxy + 'parsetogroups', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
