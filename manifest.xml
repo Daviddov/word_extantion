@@ -1,22 +1,25 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
-  <Id>7881685b-792f-4ad5-a8d1-da954a280deb</Id>
-  <Version>1.0.0.0</Version>
-  <ProviderName>Contoso</ProviderName>
+  <Id>7086d3d8-a0d5-4530-8eff-2abe78a90d7d</Id>
+  <Version>2.0.0.0</Version>
+  <ProviderName>Sefaria - Dicta Tools</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="My Office Add-in"/>
-  <Description DefaultValue="A template to get started."/>
-  <IconUrl DefaultValue="https://github.com/Daviddov/word_extantion/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://github.com/Daviddov/word_extantion/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://www.contoso.com/help"/>
+  <DisplayName DefaultValue="כלי ספרייה ודיקטה"/>
+  <Description DefaultValue="כלי לזיהוי והוספת מקורות מספרייה ודיקטה במסמכי Word"/>
+  <IconUrl DefaultValue="https://daviddov.github.io/word_extantion_v2/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://daviddov.github.io/word_extantion_v2/assets/icon-64.png"/>
+  <SupportUrl DefaultValue="https://github.com/Daviddov/word_extantion_v2"/>
   <AppDomains>
-    <AppDomain>https://www.contoso.com</AppDomain>
+    <AppDomain>https://daviddov.github.io</AppDomain>
+    <AppDomain>https://www.sefaria.org</AppDomain>
+    <AppDomain>https://talmudfinder-2-0.loadbalancer.dicta.org.il</AppDomain>
+    <AppDomain>https://dicta.org.il</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://github.com/Daviddov/word_extantion/taskpane.html"/>
+    <SourceLocation DefaultValue="https://daviddov.github.io/word_extantion_v2/index.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -62,23 +65,23 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://github.com/Daviddov/word_extantion/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://github.com/Daviddov/word_extantion/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://github.com/Daviddov/word_extantion/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://daviddov.github.io/word_extantion_v2/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://daviddov.github.io/word_extantion_v2/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://daviddov.github.io/word_extantion_v2/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Commands.Url" DefaultValue="https://github.com/Daviddov/word_extantion/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://github.com/Daviddov/word_extantion/taskpane.html"/>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/Daviddov/word_extantion_v2"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://daviddov.github.io/word_extantion_v2/src/commands/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://daviddov.github.io/word_extantion_v2/index.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Get started with your sample add-in!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Commands Group"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Show Task Pane"/>
+        <bt:String id="GetStarted.Title" DefaultValue="התחל להשתמש בכלי ספרייה ודיקטה!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="ספרייה ודיקטה"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="פתח כלי ספרייה ודיקטה"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="Your sample add-in loaded successfully. Go to the HOME tab and click the 'Show Task Pane' button to get started."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to Show a Taskpane"/>
+        <bt:String id="GetStarted.Description" DefaultValue="כלי ספרייה ודיקטה נטען בהצלחה. לך לתפריט הבית ולחץ על 'פתח כלי ספרייה ודיקטה' כדי להתחיל לזהות איזכורים ולהוסיף מקורות."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="לחץ כדי לפתוח את כלי ספרייה ודיקטה - זיהוי איזכורים והוספת מקורות יהודיים"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
