@@ -103,8 +103,8 @@ async function processDictaAPI(text, wordContext) {
     
     statusDiv.innerHTML = '<div class="loading">שלב 3: מוסיף ציטוטים למסמך...</div>';
     
-    // הוספת הציטוטים למסמך
-    await insertCitationsToDocument(citations, wordContext);
+    // הוספת הציטוטים למסמך כהערות תוך הטקסט
+    await insertInlineCitationsToDocument(citations, wordContext);
     
     statusDiv.innerHTML = `<div class="success">🎉 הושלם! נוספו ${citations.length} ציטוטים למסמך</div>`;
     
@@ -126,12 +126,12 @@ async function processDictaAPI(text, wordContext) {
   }
 }
 
-// הוספת ציטוטים למסמך
-async function insertCitationsToDocument(citations, context) {
+// הוספת ציטוטים תוך הטקסט (inline citations)
+async function insertInlineCitationsToDocument(citations, context) {
   try {
     let addedCitations = 0;
     
-    // מיון הציטוטים לפי מיקום בטקסט (מהסוף להתחלה)
+    // מיון הציטוטים לפי מיקום בטקסט (מהסוף להתחלה כדי לא לשבש את המיקומים)
     const sortedCitations = citations.sort((a, b) => b.startIChar - a.startIChar);
     
     for (const citation of sortedCitations) {
@@ -143,10 +143,10 @@ async function insertCitationsToDocument(citations, context) {
         const originalText = stripHtmlTags(citation.text);
         const citationTexts = citation.matches.map(match => {
           const cleanMatchText = stripHtmlTags(match.matchedText);
-          return `${match.verseDispHeb}: ${cleanMatchText}`;
+          return `${match.verseDispHeb}`;
         });
         
-        const footnoteText = citationTexts.join('; ');
+        const inlineCitation = ` (${citationTexts.join('; ')})`;
         
         // חיפוש הטקסט במסמך
         const body = context.document.body;
@@ -160,19 +160,18 @@ async function insertCitationsToDocument(citations, context) {
         if (searchResults.items.length > 0) {
           const foundRange = searchResults.items[0];
           
-          // הוספת מספר הערת שוליים
-          const footnoteNumber = addedCitations + 1;
-          const superscriptText = `[${footnoteNumber}]`;
-          foundRange.insertText(superscriptText, Word.InsertLocation.after);
+          // טעינת מאפייני הגופן של הטקסט המקורי
+          context.load(foundRange.font, 'size');
+          await context.sync();
           
-          // הוספת הערת השוליים בסוף המסמך
-          const endParagraph = body.insertParagraph('', Word.InsertLocation.end);
-          endParagraph.insertText(`[${footnoteNumber}] ${footnoteText}`, Word.InsertLocation.start);
+          // הוספת הציטוט מיד אחרי הטקסט המקורי
+          const citationRange = foundRange.insertText(inlineCitation, Word.InsertLocation.after);
           
-          // עיצוב הערת השוליים
-          const footnoteRange = endParagraph.getRange();
-          footnoteRange.font.size = 10;
-          footnoteRange.font.color = '#666666';
+          // עיצוב הציטוט - קטן יותר וצבע אפור
+          const originalSize = foundRange.font.size || 12; // ברירת מחדל אם לא נמצא
+          citationRange.font.size = originalSize - 2; // קטן יותר מהטקסט הרגיל
+          citationRange.font.color = '#666666'; // אפור
+          citationRange.font.italic = true; // נטוי
           
           await context.sync();
           addedCitations++;
@@ -185,7 +184,7 @@ async function insertCitationsToDocument(citations, context) {
     }
     
   } catch (error) {
-    console.error('Error inserting citations:', error);
+    console.error('Error inserting inline citations:', error);
     throw new Error(`שגיאה בהוספת ציטוטים: ${error.message}`);
   }
 }
@@ -225,10 +224,10 @@ function showManualInput() {
              style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; direction: rtl;">
     </div>
     <div style="margin-bottom: 10px;">
-      <label style="display: block; font-weight: bold; margin-bottom: 5px;">הציטוט:</label>
+      <label style="display: block; font-weight: bold; margin-bottom: 5px;">הציטוט (יופיע בסוגריים):</label>
       <textarea id="citation-text" 
-                placeholder="לדוגמה: בראשית ב, ד: אֵלֶּה תוֹלְדוֹת הַשָּׁמַיִם וְהָאָרֶץ בְּהִבָּרְאָם"
-                style="width: 100%; height: 80px; resize: vertical; direction: rtl; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+                placeholder="לדוגמה: בראשית ב, ד"
+                style="width: 100%; height: 60px; resize: vertical; direction: rtl; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
     </div>
     <div>
       <button onclick="insertFromInput()" 
@@ -250,7 +249,7 @@ function showManualInput() {
   }, 100);
 }
 
-// הוספה מהקלט הידני
+// הוספה מהקלט הידני כציטוט תוך הטקסט
 async function insertFromInput() {
   const searchText = document.getElementById('search-text')?.value.trim();
   const citationText = document.getElementById('citation-text')?.value.trim();
@@ -277,24 +276,25 @@ async function insertFromInput() {
         return;
       }
       
-      // הוספת הערת שוליים
       const foundRange = searchResults.items[0];
-      const footnoteNumber = 1; // ניתן לשפר ולספור הערות קיימות
       
-      foundRange.insertText(`[${footnoteNumber}]`, Word.InsertLocation.after);
+      // טעינת מאפייני הגופן
+      context.load(foundRange.font, 'size');
+      await context.sync();
       
-      // הוספת הציטוט בסוף המסמך
-      const endParagraph = body.insertParagraph('', Word.InsertLocation.end);
-      endParagraph.insertText(`[${footnoteNumber}] ${citationText}`, Word.InsertLocation.start);
+      // הוספת הציטוט מיד אחרי הטקסט
+      const inlineCitation = ` (${citationText})`;
+      const citationRange = foundRange.insertText(inlineCitation, Word.InsertLocation.after);
       
-      // עיצוב
-      const footnoteRange = endParagraph.getRange();
-      footnoteRange.font.size = 10;
-      footnoteRange.font.color = '#666666';
+      // עיצוב הציטוט
+      const originalSize = foundRange.font.size || 12;
+      citationRange.font.size = originalSize - 2;
+      citationRange.font.color = '#666666';
+      citationRange.font.italic = true;
       
       await context.sync();
       
-      document.getElementById('status').innerHTML = '<div class="success">✅ הציטוט נוסף בהצלחה!</div>';
+      document.getElementById('status').innerHTML = '<div class="success">✅ הציטוט נוסף בהצלחה תוך הטקסט!</div>';
       
       // ניקוי השדות
       document.getElementById('search-text').value = '';
