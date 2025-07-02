@@ -39,7 +39,7 @@ async function extractAndProcessWithAPI() {
   }
 }
 let proxy = 'https://dictaproxy-production.up.railway.app/';
-
+proxy = 'https://carnelian-carnation-red.glitch.me/';
 // עיבוד עם API של דיקטה
 async function processDictaAPI(text, wordContext) {
   const statusDiv = document.getElementById('status');
