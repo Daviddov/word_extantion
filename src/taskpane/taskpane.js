@@ -1,5 +1,6 @@
+// taskpane.js - קובץ ראשי המטפל ב-API ובממשק המשתמש
+
 // הפונקציות הגלובליות
-window.insertFromInput = insertFromInput;
 window.hideCitationInput = hideCitationInput;
 
 Office.onReady((info) => {
@@ -7,6 +8,67 @@ Office.onReady((info) => {
     document.getElementById("extractText").onclick = extractAndProcessWithAPI;
   }
 });
+
+// פיצול ציטוטים גדולים לציטוטים קטנים יותר
+function splitLargeCitations(citations) {
+  const refinedCitations = [];
+  
+  for (const citation of citations) {
+    if (!citation.matches || citation.matches.length === 0) {
+      continue;
+    }
+    
+    // אם יש התאמה אחת בלבד, נשאיר את הציטוט כמו שהוא
+    if (citation.matches.length === 1) {
+      refinedCitations.push({
+        ...citation,
+        primaryMatch: citation.matches[0]
+      });
+      continue;
+    }
+    
+    // אם יש מספר התאמות, ניצור ציטוט נפרד לכל התאמה
+    citation.matches.forEach((match, index) => {
+      // נמצא את המיקום הטוב ביותר להתאמה הזו בתוך הטקסט
+      const cleanCitationText = stripHtmlTags(citation.text);
+      const cleanMatchText = stripHtmlTags(match.matchedText);
+      
+      // נחפש את המיקום של ההתאמה בתוך הציטוט
+      const matchPosition = cleanCitationText.indexOf(cleanMatchText.trim());
+      
+      let startPos = citation.startIChar;
+      let searchText = cleanMatchText;
+      
+      // אם מצאנו את המיקום, נתאים את הפוזיציה
+      if (matchPosition >= 0) {
+        startPos = citation.startIChar + matchPosition;
+        // נלקח חלק מהטקסט סביב ההתאמה לחיפוש טוב יותר
+        const contextStart = Math.max(0, matchPosition - 10);
+        const contextEnd = Math.min(cleanCitationText.length, matchPosition + cleanMatchText.length + 10);
+        searchText = cleanCitationText.substring(contextStart, contextEnd);
+      }
+      
+      refinedCitations.push({
+        startIChar: startPos,
+        endIChar: startPos + searchText.length,
+        text: searchText,
+        matches: [match],
+        primaryMatch: match,
+        originalCitation: citation
+      });
+    });
+  }
+  
+  return refinedCitations;
+}
+
+// פונקציית עזר
+function stripHtmlTags(html) {
+  if (!html) return '';
+  const tmp = document.createElement('div');
+  tmp.innerHTML = html;
+  return tmp.textContent || tmp.innerText || '';
+};
 
 // הפונקציה הראשית
 async function extractAndProcessWithAPI() {
@@ -79,10 +141,13 @@ async function processDictaAPIInChunks(text, wordContext) {
     
     statusDiv.innerHTML = '<div class="loading">מוסיף ציטוטים למסמך...</div>';
     
-    // הוספת הציטוטים למסמך
-    await insertCitationsToDocument(allCitations, wordContext);
+    // פיצול ציטוטים גדולים לציטוטים קטנים יותר
+    const refinedCitations = splitLargeCitations(allCitations);
     
-    statusDiv.innerHTML = `<div class="success">🎉 הושלם! נוספו ${allCitations.length} ציטוטים למסמך</div>`;
+    // הוספת הציטוטים למסמך (קריאה לפונקציה מהקובץ השני)
+    await window.insertCitationsToDocument(refinedCitations, wordContext);
+    
+    statusDiv.innerHTML = `<div class="success">🎉 הושלם! נוספו ${refinedCitations.length} ציטוטים למסמך</div>`;
     
   } catch (error) {
     console.error('Error processing with API:', error);
@@ -210,152 +275,6 @@ async function processChunkWithAPI(chunkText, offsetPosition) {
   }
 }
 
-// הוספת ציטוטים למסמך עם footnotes אמיתיים
-async function insertCitationsToDocument(citations, context) {
-  try {
-    let addedCitations = 0;
-    let footnoteCounter = 1;
-    
-    // מיון הציטוטים לפי מיקום בטקסט (מהסוף להתחלה)
-    const sortedCitations = citations.sort((a, b) => b.startIChar - a.startIChar);
-    
-    const body = context.document.body;
-    
-    for (const citation of sortedCitations) {
-      if (citation.matches && citation.matches.length > 0) {
-        const statusDiv = document.getElementById('status');
-        statusDiv.innerHTML = `<div class="loading">מוסיף ציטוט ${addedCitations + 1} מתוך ${citations.length}...</div>`;
-        
-        // הכנת טקסט הציטוט
-        const originalText = stripHtmlTags(citation.text);
-        const citationTexts = citation.matches.map(match => {
-          const cleanMatchText = stripHtmlTags(match.matchedText);
-          return `${match.verseDispHeb}: ${cleanMatchText}`;
-        });
-        
-        const footnoteText = citationTexts.join('; ');
-        
-        // חיפוש הטקסט במסמך
-        const searchResults = body.search(originalText, { 
-          matchCase: false, 
-          matchWildcards: false,
-          matchWholeWord: false
-        });
-        context.load(searchResults, 'items');
-        await context.sync();
-        
-        if (searchResults.items.length > 0) {
-          const foundRange = searchResults.items[0];
-          
-          // הוספת footnote עם hyperlink (MSO style)
-          await insertMSOFootnote(foundRange, footnoteText, footnoteCounter, context);
-          
-          addedCitations++;
-          footnoteCounter++;
-        }
-      }
-    }
-    
-    if (addedCitations === 0) {
-      throw new Error('לא הצליח למצוא את הטקסטים במסמך להוספת ציטוטים');
-    }
-    
-  } catch (error) {
-    console.error('Error inserting citations:', error);
-    throw new Error(`שגיאה בהוספת ציטוטים: ${error.message}`);
-  }
-}
-
-// הוספת footnote בסגנון MSO עם hyperlinks
-async function insertMSOFootnote(range, footnoteText, footnoteNumber, context) {
-  try {
-    // הוספת הקישור בטקסט הראשי
-    const footnoteRefHtml = `<a href="#_ftn${footnoteNumber}" name="_ftnref${footnoteNumber}"><span style="mso-footnote-id:ftn${footnoteNumber}; vertical-align:super; color:blue; text-decoration:underline;">[${footnoteNumber}]</span></a>`;
-    
-    // הכנסת HTML עם insertHtml
-    range.insertHtml(footnoteRefHtml, Word.InsertLocation.after);
-    await context.sync();
-    
-    // חיפוש או יצירת אזור footnotes
-    const body = context.document.body;
-    let footnotesSection = await findOrCreateFootnotesSection(body, context);
-    
-    // הוספת ה-footnote עצמו
-    const footnoteHtml = `
-    <div style="mso-element:footnote;" id="ftn${footnoteNumber}">
-        <p style="text-align:right; direction:rtl; font-size:10pt; margin:0; padding:2px 0;">
-            <a href="#_ftnref${footnoteNumber}" name="_ftn${footnoteNumber}">
-                <span style="mso-footnote-id:ftn${footnoteNumber}; color:blue; text-decoration:underline;">
-                    [${footnoteNumber}]
-                </span>
-            </a>
-            <span style="color:#666666; margin-right:5px;">${footnoteText}</span>
-        </p>
-    </div>`;
-    
-    footnotesSection.insertHtml(footnoteHtml, Word.InsertLocation.end);
-    await context.sync();
-    
-  } catch (error) {
-    console.warn('שגיאה בהוספת MSO footnote, משתמש בשיטה פשוטה:', error);
-    
-    // שיטה פשוטה יותר אם HTML לא עובד
-    const linkText = `[${footnoteNumber}]`;
-    const insertedRange = range.insertText(linkText, Word.InsertLocation.after);
-    insertedRange.font.superscript = true;
-    insertedRange.font.color = '#0066cc';
-    insertedRange.hyperlink = `#_ftn${footnoteNumber}`;
-    
-    await context.sync();
-    
-    // הוספת footnote פשוט
-    const body = context.document.body;
-    const footnoteParagraph = body.insertParagraph('', Word.InsertLocation.end);
-    
-    const numberRange = footnoteParagraph.insertText(`[${footnoteNumber}] `, Word.InsertLocation.start);
-    numberRange.font.color = '#0066cc';
-    numberRange.hyperlink = `#_ftnref${footnoteNumber}`;
-    
-    const textRange = footnoteParagraph.insertText(footnoteText, Word.InsertLocation.end);
-    textRange.font.size = 10;
-    textRange.font.color = '#666666';
-    
-    footnoteParagraph.alignment = Word.Alignment.right;
-    footnoteParagraph.leftIndent = 18;
-    
-    await context.sync();
-  }
-}
-
-// מציאה או יצירה של אזור footnotes
-async function findOrCreateFootnotesSection(body, context) {
-  // חיפוש אזור footnotes קיים
-  const footnotesSearch = body.search('mso-element:footnote-list', { matchCase: false });
-  context.load(footnotesSearch, 'items');
-  await context.sync();
-  
-  if (footnotesSearch.items.length > 0) {
-    return footnotesSearch.items[0];
-  }
-  
-
-  
-  // יצירת container לfootnotes
-  const footnotesContainer = body.insertParagraph('', Word.InsertLocation.end);
-  footnotesContainer.insertHtml('<div style="mso-element:footnote-list;"></div>', Word.InsertLocation.start);
-  
-  await context.sync();
-  return footnotesContainer;
-}
-
-// פונקציות עזר
-function stripHtmlTags(html) {
-  if (!html) return '';
-  const tmp = document.createElement('div');
-  tmp.innerHTML = html;
-  return tmp.textContent || tmp.innerText || '';
-}
-
 // הצגת חלון הוספה ידנית
 function showManualInput() {
   let existingInput = document.getElementById('citation-input-container');
@@ -389,7 +308,7 @@ function showManualInput() {
                 style="width: 100%; height: 80px; resize: vertical; direction: rtl; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
     </div>
     <div>
-      <button onclick="insertFromInput()" 
+      <button onclick="window.insertFromInput()" 
               style="margin-right: 10px; padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px;">
         הוסף למסמך
       </button>
@@ -406,61 +325,6 @@ function showManualInput() {
   setTimeout(() => {
     document.getElementById('search-text').focus();
   }, 100);
-}
-
-// הוספה מהקלט הידני
-async function insertFromInput() {
-  const searchText = document.getElementById('search-text')?.value.trim();
-  const citationText = document.getElementById('citation-text')?.value.trim();
-  
-  if (!searchText || !citationText) {
-    document.getElementById('status').innerHTML = '<div class="error">נא להזין גם טקסט לחיפוש וגם ציטוט</div>';
-    return;
-  }
-  
-  try {
-    await Word.run(async (context) => {
-      const body = context.document.body;
-      
-      // חיפוש הטקסט
-      const searchResults = body.search(searchText, { 
-        matchCase: false, 
-        matchWildcards: false
-      });
-      context.load(searchResults, 'items');
-      await context.sync();
-      
-      if (searchResults.items.length === 0) {
-        document.getElementById('status').innerHTML = '<div class="error">לא נמצא הטקסט במסמך</div>';
-        return;
-      }
-      
-      // מציאת מספר footnote הבא
-      const footnoteSearch = body.search(/\[(\d+)\]/, { matchWildcards: true });
-      context.load(footnoteSearch, 'items');
-      await context.sync();
-      
-      let footnoteNumber = footnoteSearch.items.length + 1;
-      
-      const foundRange = searchResults.items[0];
-      
-      // הוספת footnote עם MSO style
-      await insertMSOFootnote(foundRange, citationText, footnoteNumber, context);
-      
-      document.getElementById('status').innerHTML = '<div class="success">✅ הציטוט נוסף בהצלחה!</div>';
-      
-      // ניקוי השדות
-      document.getElementById('search-text').value = '';
-      document.getElementById('citation-text').value = '';
-      
-      setTimeout(() => {
-        hideCitationInput();
-      }, 2000);
-    });
-  } catch (error) {
-    console.error('Error inserting citation:', error);
-    document.getElementById('status').innerHTML = `<div class="error">שגיאה: ${error.message}</div>`;
-  }
 }
 
 // הסתרת חלון הקלט
