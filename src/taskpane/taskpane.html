@@ -5,151 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>תוסף דיקטה</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'David', sans-serif;
-            margin: 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            font-size: 14px;
-            direction: rtl;
-        }
-        
-        .container {
-            max-width: 100%;
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        
-        h1 {
-            color: #0078d4;
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 24px;
-        }
-        
-        .description {
-            background-color: #e6f7ff;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-right: 4px solid #0078d4;
-        }
-        
-        .main-button {
-            width: 100%;
-            padding: 15px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-bottom: 20px;
-            transition: background-color 0.3s;
-        }
-        
-        .main-button:hover {
-            background-color: #106ebe;
-        }
-        
-        .main-button:disabled {
-            background-color: #ccc;
-            cursor: not-allowed;
-        }
-        
-        #status {
-            margin-top: 15px;
-            min-height: 40px;
-        }
-        
-        .loading {
-            color: #0078d4;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #e6f7ff;
-            border-radius: 4px;
-            animation: pulse 1.5s infinite;
-        }
-        
-        .success {
-            color: #28a745;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #d4edda;
-            border-radius: 4px;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .error {
-            color: #dc3545;
-            font-weight: bold;
-            padding: 10px;
-            background-color: #f8d7da;
-            border-radius: 4px;
-            border: 1px solid #f5c6cb;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.7; }
-            100% { opacity: 1; }
-        }
-        
-        .instructions {
-            background-color: #fff3cd;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 20px;
-            border-right: 4px solid #ffc107;
-        }
-        
-        .instructions h3 {
-            margin-top: 0;
-            color: #856404;
-        }
-        
-        .instructions ul {
-            margin: 10px 0;
-            padding-right: 20px;
-        }
-        
-        .instructions li {
-            margin-bottom: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="taskpane.css">
 </head>
 <body>
     <div class="container">
-        <h1>🔍 תוסף דיקטה לוורד</h1>
-        
-        <div class="description">
-            <strong>מה התוסף עושה:</strong><br>
-            התוסף לוקח את כל הטקסט מהמסמך, שולח אותו לשירות דיקטה, ומקבל בחזרה את כל הציטוטים והאיזכורים המקראיים. לאחר מכן הוא מוסיף את הציטוטים כהערות שוליים במקומות הנכונים במסמך.
-        </div>
+        <h1>🔍 תוסף דיקטה משופר</h1>
         
         <div class="instructions">
             <h3>הוראות שימוש:</h3>
             <ul>
-                <li>וודא שיש טקסט במסמך הוורד</li>
-                <li>לחץ על הכפתור "חפש וטען ציטוטים"</li>
-                <li>המתן עד שהתהליך יסתיים</li>
-                <li>הציטוטים יתווספו אוטומטית למסמך</li>
+                <li>בחר את סוג הציטוט הרצוי (הערות שוליים או inline)</li>
+                <li>קבע את רמת הדיוק (ככל שהמספר גבוה יותר, הציטוטים מדויקים יותר)</li>
+                <li>לחץ על "חפש ציטוטים" ובדוק את התוצאות</li>
+                <li>אשר את הציטוטים כדי להוסיף אותם למסמך</li>
             </ul>
         </div>
         
+        <div class="settings-section">
+            <h3>🎯 הגדרות ציטוטים</h3>
+            
+            <div class="radio-group">
+                <div class="radio-option">
+                    <input type="radio" id="footnotes" name="citationType" value="footnotes" checked>
+                    <label for="footnotes">
+                        <strong>הערות שוליים (Footnotes)</strong>
+                        <div class="description">הציטוטים יופיעו כהערות שוליים מספוריות</div>
+                    </label>
+                </div>
+                
+                <div class="radio-option">
+                    <input type="radio" id="inline" name="citationType" value="inline">
+                    <label for="inline">
+                        <strong>ציטוטים בתוך הטקסט (Inline)</strong>
+                        <div class="description">הציטוטים יופיעו בסוגריים בתוך הטקסט</div>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span><strong>רמת דיוק (smin):</strong></span>
+                    <span class="slider-value" id="sminValue">22</span>
+                </div>
+                <input type="range" min="0" max="50" value="22" class="slider" id="sminSlider">
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: #6c757d; margin-top: 5px;">
+                    <span>0 (מקסימום ציטוטים)</span>
+                    <span>50 (מינימום ציטוטים)</span>
+                </div>
+            </div>
+        </div>
+        
         <button id="extractText" class="main-button">
-            🔍 חפש וטען ציטוטים מהמסמך
+            🔍 חפש ציטוטים במסמך
         </button>
         
         <div id="status"></div>
+        
+        <div id="previewSection" class="preview-section">
+            <div class="preview-header">
+                <div class="preview-title">ציטוטים שנמצאו:</div>
+                <div class="citation-count" id="citationCount">0</div>
+            </div>
+            <div class="citations-list" id="citationsList"></div>
+            <div class="action-buttons">
+                <button class="action-button approve-button" id="approveCitations">
+                    ✅ אשר והוסף למסמך
+                </button>
+                <button class="action-button cancel-button" id="cancelCitations">
+                    ❌ ביטול
+                </button>
+            </div>
+        </div>
     </div>
     
     <script src="taskpane.js"></script>
     <script src="documentInserter.js"></script>
-
+    <script src="inlineInserter.js"></script>
 </body>
 </html>

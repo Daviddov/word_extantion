@@ -2,12 +2,33 @@
 
 // הפונקציות הגלובליות
 window.hideCitationInput = hideCitationInput;
+window.insertFromInput = insertFromInput;
+
+// מידע גלובלי
+let currentApiResults = null;
 
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
+    // הגדרת אירועים לכפתורים
     document.getElementById("extractText").onclick = extractAndProcessWithAPI;
+    document.getElementById("approveCitations").onclick = approveCitations;
+    document.getElementById("cancelCitations").onclick = cancelCitations;
+    
+    // הגדרת אירועים נוספים
+    setupEventListeners();
   }
 });
+
+// הגדרת האזנות לאירועים
+function setupEventListeners() {
+  // אירוע שינוי בסליידר
+  const sminSlider = document.getElementById('sminSlider');
+  const sminValue = document.getElementById('sminValue');
+  
+  sminSlider.addEventListener('input', function() {
+    sminValue.textContent = this.value;
+  });
+}
 
 // פיצול ציטוטים גדולים לציטוטים קטנים יותר
 function splitLargeCitations(citations) {
@@ -91,7 +112,7 @@ async function extractAndProcessWithAPI() {
       }
       
       // עיבוד הטקסט עם API של דיקטה בחלקים
-      await processDictaAPIInChunks(documentText, context);
+      await processDictaAPIInChunks(documentText);
     });
   } catch (error) {
     console.error('Error:', error);
@@ -102,7 +123,7 @@ async function extractAndProcessWithAPI() {
 }
 
 // עיבוד עם API של דיקטה בחלקים
-async function processDictaAPIInChunks(text, wordContext) {
+async function processDictaAPIInChunks(text) {
   const statusDiv = document.getElementById('status');
   const MAX_CHUNK_SIZE = 9500; // השארנו מקום בטוח מתחת ל-10K
   
@@ -139,15 +160,16 @@ async function processDictaAPIInChunks(text, wordContext) {
       return;
     }
     
-    statusDiv.innerHTML = '<div class="loading">מוסיף ציטוטים למסמך...</div>';
-    
     // פיצול ציטוטים גדולים לציטוטים קטנים יותר
     const refinedCitations = splitLargeCitations(allCitations);
     
-    // הוספת הציטוטים למסמך (קריאה לפונקציה מהקובץ השני)
-    await window.insertCitationsToDocument(refinedCitations, wordContext);
+    // שמירת התוצאות הגלובליות
+    currentApiResults = refinedCitations;
     
-    statusDiv.innerHTML = `<div class="success">🎉 הושלם! נוספו ${refinedCitations.length} ציטוטים למסמך</div>`;
+    // הצגת התוצאות בממשק
+    displayCitationsPreview(refinedCitations);
+    
+    statusDiv.innerHTML = '<div class="success">נמצאו ציטוטים! אנא בדוק את התוצאות להלן.</div>';
     
   } catch (error) {
     console.error('Error processing with API:', error);
@@ -165,6 +187,51 @@ async function processDictaAPIInChunks(text, wordContext) {
       statusDiv.innerHTML = `<div class="error">שגיאה: ${error.message}</div>`;
     }
   }
+}
+
+// הצגת תצוגה מקדימה של הציטוטים שנמצאו
+function displayCitationsPreview(citations) {
+  const previewSection = document.getElementById('previewSection');
+  const citationsList = document.getElementById('citationsList');
+  const citationCount = document.getElementById('citationCount');
+  const actionButtons = document.querySelector('.action-buttons');
+  
+  // ניקוי הרשימה הקודמת
+  citationsList.innerHTML = '';
+  
+  // עדכון מספר הציטוטים
+  citationCount.textContent = citations.length;
+  
+  // הוספת כל ציטוט לרשימה
+  citations.forEach((citation, index) => {
+    const citationItem = document.createElement('div');
+    citationItem.className = 'citation-item';
+    
+    // הטקסט המקורי (חלק מהציטוט שנמצא)
+    const originalText = stripHtmlTags(citation.text);
+    
+    // המקורות שנמצאו (פסוקים)
+    const references = citation.matches.map(match => {
+      const score = Math.round(match.score);
+      return `
+        <div class="citation-reference">
+          ${match.verseDispHeb || ''}
+          <span class="citation-score">${score}</span>
+        </div>
+      `;
+    }).join('');
+    
+    citationItem.innerHTML = `
+      <div class="citation-text">${originalText}</div>
+      ${references}
+    `;
+    
+    citationsList.appendChild(citationItem);
+  });
+  
+  // הצגת האזור והכפתורים
+  previewSection.style.display = 'block';
+  actionButtons.style.display = 'block';
 }
 
 // חלוקת הטקסט לחלקים
@@ -211,6 +278,9 @@ function splitTextIntoChunks(text, maxSize) {
 // עיבוד חלק יחיד
 async function processChunkWithAPI(chunkText, offsetPosition) {
   try {
+    // קבלת ערך ה-smin מהסליידר
+    const smin = document.getElementById('sminSlider').value;
+    
     // קריאה ראשונה - חיפוש התאמות
     const firstResponse = await fetch('https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim', {
       method: 'POST',
@@ -237,7 +307,7 @@ async function processChunkWithAPI(chunkText, offsetPosition) {
     }
     
     // קריאה שנייה - קבלת הציטוטים המעוצבים
-    const secondResponse = await fetch('https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=22&smax=10000', {
+    const secondResponse = await fetch(`https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=${smin}&smax=10000`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -272,6 +342,140 @@ async function processChunkWithAPI(chunkText, offsetPosition) {
   } catch (error) {
     console.error('Error processing chunk:', error);
     return [];
+  }
+}
+
+// אישור והוספת הציטוטים למסמך
+async function approveCitations() {
+  const statusDiv = document.getElementById('status');
+  const previewSection = document.getElementById('previewSection');
+  
+  if (!currentApiResults || currentApiResults.length === 0) {
+    statusDiv.innerHTML = '<div class="error">אין ציטוטים להוספה</div>';
+    return;
+  }
+  
+  try {
+    statusDiv.innerHTML = '<div class="loading">מוסיף ציטוטים למסמך...</div>';
+    
+    // בדיקת סוג הציטוט שנבחר (footnotes או inline)
+    const citationType = document.querySelector('input[name="citationType"]:checked').value;
+    
+    // קבלת ערך ה-smin מהסליידר
+    const minScore = document.getElementById('sminSlider').value;
+    
+    await Word.run(async (context) => {
+      let addedCount = 0;
+      
+      if (citationType === 'footnotes') {
+        // שימוש בפונקציה מ-documentInserter.js
+        addedCount = await window.insertCitationsToDocument(currentApiResults, context, minScore);
+      } else if (citationType === 'inline') {
+        // וודא שה-script לציטוטים inline נטען
+        loadInlineScript();
+        
+        // המתנה קצרה לטעינת הסקריפט
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // שימוש בפונקציה מ-inlineInserter.js
+        addedCount = await window.insertInlineCitationsToDocument(currentApiResults, context, minScore);
+      }
+      
+      statusDiv.innerHTML = `<div class="success">🎉 הושלם! נוספו ${addedCount} ציטוטים למסמך</div>`;
+      
+      // הסתרת אזור התצוגה המקדימה
+      previewSection.style.display = 'none';
+      
+      // איפוס התוצאות הנוכחיות
+      currentApiResults = null;
+    });
+  } catch (error) {
+    console.error('Error adding citations:', error);
+    statusDiv.innerHTML = `<div class="error">שגיאה בהוספת ציטוטים: ${error.message}</div>`;
+  }
+}
+
+// טעינת סקריפט הציטוטים ה-inline אם הוא לא נטען
+function loadInlineScript() {
+  if (!window.insertInlineCitationsToDocument) {
+    const script = document.createElement('script');
+    script.src = 'inlineInserter.js';
+    document.body.appendChild(script);
+  }
+}
+
+// ביטול הוספת הציטוטים
+function cancelCitations() {
+  const previewSection = document.getElementById('previewSection');
+  const statusDiv = document.getElementById('status');
+  
+  // הסתרת אזור התצוגה המקדימה
+  previewSection.style.display = 'none';
+  
+  // איפוס התוצאות הנוכחיות
+  currentApiResults = null;
+  
+  statusDiv.innerHTML = '<div>הפעולה בוטלה</div>';
+}
+
+// הוספת ציטוט ידני
+async function insertFromInput() {
+  const searchText = document.getElementById('search-text').value.trim();
+  const citationText = document.getElementById('citation-text').value.trim();
+  const statusDiv = document.getElementById('status');
+  
+  if (!searchText || !citationText) {
+    statusDiv.innerHTML = '<div class="error">יש למלא את שני השדות</div>';
+    return;
+  }
+  
+  try {
+    statusDiv.innerHTML = '<div class="loading">מוסיף ציטוט...</div>';
+    
+    // בדיקת סוג הציטוט שנבחר (footnotes או inline)
+    const citationType = document.querySelector('input[name="citationType"]:checked').value;
+    
+    if (citationType === 'inline') {
+      // וודא שה-script לציטוטים inline נטען
+      loadInlineScript();
+      
+      // המתנה קצרה לטעינת הסקריפט
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // שימוש בפונקציה מ-inlineInserter.js
+      await window.insertManualInlineCitation(searchText, citationText);
+    } else {
+      // נשתמש ב-footnotes
+      await Word.run(async (context) => {
+        const body = context.document.body;
+        const searchResults = body.search(searchText, {
+          matchCase: false,
+          matchWholeWord: false
+        });
+        
+        context.load(searchResults, 'items');
+        await context.sync();
+        
+        if (searchResults.items.length === 0) {
+          throw new Error('לא נמצא הטקסט במסמך');
+        }
+        
+        const targetRange = searchResults.items[0].getRange('End');
+        
+        // יצירת footnote עם התוכן המבוקש
+        const footnoteXml = window.createFootnoteReferenceOOXML(1, citationText);
+        targetRange.insertOoxml(footnoteXml, 'After');
+        
+        await context.sync();
+      });
+    }
+    
+    statusDiv.innerHTML = '<div class="success">הציטוט הידני נוסף בהצלחה</div>';
+    hideCitationInput();
+    
+  } catch (error) {
+    console.error('Error adding manual citation:', error);
+    statusDiv.innerHTML = `<div class="error">שגיאה בהוספת ציטוט ידני: ${error.message}</div>`;
   }
 }
 
