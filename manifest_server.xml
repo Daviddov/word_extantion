@@ -4,11 +4,11 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Sefaria Tools</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="כלי ספרייה"/>
+  <DisplayName DefaultValue="כלי דיקטה"/>
   <Description DefaultValue="כלי לזיהוי והוספת מקורות מספרייה במסמכי Word"/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
-  <SupportUrl DefaultValue="https://localhost:3000"/>
+  <IconUrl DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-64.png"/>
+  <SupportUrl DefaultValue="https://daviddov.github.io/word_extantion"/>
   <AppDomains>
     <AppDomain>https://daviddov.github.io</AppDomain>
     <AppDomain>https://www.sefaria.org</AppDomain>
@@ -17,7 +17,7 @@
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+    <SourceLocation DefaultValue="https://daviddov.github.io/word_extantion/index.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -63,23 +63,23 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-80.png"/>
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://localhost:3000"/>
-        <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://daviddov.github.io/word_extantion"/>
+        <bt:Url id="Commands.Url" DefaultValue="https://daviddov.github.io/word_extantion/commands.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://daviddov.github.io/word_extantion/index.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="התחל להשתמש בכלי ספרייה!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="כלי ספרייה"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="פתח כלי ספרייה"/>
+        <bt:String id="GetStarted.Title" DefaultValue="התחל להשתמש בכלי דיקטה!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="כלי דיקטה"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="פתח כלי דיקטה"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="כלי ספרייה נטען בהצלחה. לך לתפריט הבית ולחץ על 'פתח כלי ספרייה' כדי להתחיל."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="לחץ כדי לפתוח את כלי ספרייה"/>
+        <bt:String id="GetStarted.Description" DefaultValue="כלי דיקטה נטען בהצלחה. לך לתפריט הבית ולחץ על 'פתח כלי ספרייה' כדי להתחיל."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="לחץ כדי לפתוח את כלי דיקטה"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
