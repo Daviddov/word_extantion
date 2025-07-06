@@ -4,7 +4,7 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Sefaria Tools</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="כלי ספרייה"/>
+  <DisplayName DefaultValue="כלי דיקטה"/>
   <Description DefaultValue="כלי לזיהוי והוספת מקורות מספרייה במסמכי Word"/>
   <IconUrl DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-32.png"/>
   <HighResolutionIconUrl DefaultValue="https://daviddov.github.io/word_extantion/assets/icon-64.png"/>
@@ -73,13 +73,13 @@
         <bt:Url id="Taskpane.Url" DefaultValue="https://daviddov.github.io/word_extantion/index.html"/>
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="התחל להשתמש בכלי ספרייה!"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="כלי ספרייה"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="פתח כלי ספרייה"/>
+        <bt:String id="GetStarted.Title" DefaultValue="התחל להשתמש בכלי דיקטה!"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="כלי דיקטה"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="פתח כלי דיקטה"/>
       </bt:ShortStrings>
       <bt:LongStrings>
-        <bt:String id="GetStarted.Description" DefaultValue="כלי ספרייה נטען בהצלחה. לך לתפריט הבית ולחץ על 'פתח כלי ספרייה' כדי להתחיל."/>
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="לחץ כדי לפתוח את כלי ספרייה"/>
+        <bt:String id="GetStarted.Description" DefaultValue="כלי דיקטה נטען בהצלחה. לך לתפריט הבית ולחץ על 'פתח כלי ספרייה' כדי להתחיל."/>
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="לחץ כדי לפתוח את כלי דיקטה"/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
