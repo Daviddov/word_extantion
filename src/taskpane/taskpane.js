@@ -6,7 +6,7 @@ window.insertFromInput = insertFromInput;
 
 // מידע גלובלי
 let currentApiResults = null;
-
+const PROXY_URL = 'https://carnelian-carnation-red.glitch.me/';
 Office.onReady((info) => {
   if (info.host === Office.HostType.Word) {
     // הגדרת אירועים לכפתורים
@@ -282,7 +282,7 @@ async function processChunkWithAPI(chunkText, offsetPosition) {
     const smin = document.getElementById('sminSlider').value;
     
     // קריאה ראשונה - חיפוש התאמות
-    const firstResponse = await fetch('https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/markpsukim', {
+    const firstResponse = await fetch(PROXY_URL + 'markpsukim', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -307,7 +307,7 @@ async function processChunkWithAPI(chunkText, offsetPosition) {
     }
     
     // קריאה שנייה - קבלת הציטוטים המעוצבים
-    const secondResponse = await fetch(`https://cors-anywhere.herokuapp.com/https://talmudfinder-2-0.loadbalancer.dicta.org.il/TalmudFinder/api/parsetogroups?smin=${smin}&smax=10000`, {
+    const secondResponse = await fetch(`${PROXY_URL}parsetogroups?smin=${smin}&smax=10000`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
